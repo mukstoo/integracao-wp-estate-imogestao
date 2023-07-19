@@ -1,9 +1,26 @@
-/* document.addEventListener('DOMContentLoaded', async (event) => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const apiKeyElement = document.getElementById("apiKey");
+    const storedItemsElement = document.getElementById("storedItems");
+    const resultsElement = document.getElementById("results");
     let itemsProcessed = parseInt(localStorage.getItem("itemsProcessed")) || 0;
-    document.getElementById("storedItems").value = itemsProcessed;
+    storedItemsElement.value = itemsProcessed;
+
+    async function setApiKey() {
+        const apiKey = apiKeyElement.value;
+        try {
+            const response = await fetch(`${myplugin_ajax.ajax_url}?action=set_api_key&api_key=${apiKey}`);
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            const data = await response.json();
+            updateUI(data.data);
+        } catch (error) {
+            showError(error.message);
+        }
+    }
 
     async function fetchData() {
-        itemsProcessed = parseInt(document.getElementById("storedItems").value);
+        itemsProcessed = parseInt(storedItemsElement.value);
         const maxItems = parseInt(document.getElementById("maxItems").value);
         const itemsToProcess = itemsProcessed + maxItems;
         const page = Math.floor(itemsProcessed / 24);
@@ -14,7 +31,6 @@
                 throw new Error(response.statusText);
             }
             const data = await response.json();
-            console.log(data);
             updateUI(data.data);
             updateLocalStorage(data.data);
         } catch (error) {
@@ -23,50 +39,45 @@
     }
 
     function updateUI(data) {
-        const results = document.getElementById("results");
         const textNode = document.createTextNode(data.message);
         const lineBreak = document.createElement("br");
-        results.appendChild(textNode);
-        results.appendChild(lineBreak); // Add a line break after each message
+        resultsElement.appendChild(textNode);
+        resultsElement.appendChild(lineBreak); // Add a line break after each message
     }
 
     function updateLocalStorage(data) {
-        console.log(data);
-        console.log(data.numItemsFetched);
         if (!isNaN(data.numItemsFetched)) {
-            console.log(data.numItemsFetched);
             itemsProcessed += data.numItemsFetched;
             localStorage.setItem("itemsProcessed", itemsProcessed);
-            document.getElementById("storedItems").value = itemsProcessed;
+            storedItemsElement.value = itemsProcessed;
         }
     }
 
     function showError(message) {
-        const results = document.getElementById("results");
         const textNode = document.createTextNode(`Error: ${message}`);
-        results.appendChild(textNode);
+        resultsElement.appendChild(textNode);
     }
 
     function clearData() {
         localStorage.removeItem("itemsProcessed");
         itemsProcessed = 0;
-        document.getElementById("storedItems").value = itemsProcessed;
-        document.getElementById("results").textContent = "";
+        storedItemsElement.value = itemsProcessed;
+        resultsElement.textContent = "";
     }
 
     function updateStoredItems() {
-        const storedItems = parseInt(document.getElementById("storedItems").value);
+        const storedItems = parseInt(storedItemsElement.value);
         localStorage.setItem("itemsProcessed", storedItems);
         itemsProcessed = storedItems;
-        document.getElementById("storedItems").value = itemsProcessed;
+        storedItemsElement.value = itemsProcessed;
     }
 
+    document.getElementById("setApiKey").addEventListener("click", setApiKey);
     document.getElementById("fetchData").addEventListener("click", fetchData);
     document.getElementById("clearData").addEventListener("click", clearData);
     document.getElementById("setStoredItems").addEventListener("click", updateStoredItems);
 });
- */
-document.addEventListener('DOMContentLoaded', async () => {
+/* document.addEventListener('DOMContentLoaded', async () => {
     const storedItemsElement = document.getElementById("storedItems");
     const resultsElement = document.getElementById("results");
     let itemsProcessed = parseInt(localStorage.getItem("itemsProcessed")) || 0;
@@ -129,3 +140,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById("clearData").addEventListener("click", clearData);
     document.getElementById("setStoredItems").addEventListener("click", updateStoredItems);
 });
+ */

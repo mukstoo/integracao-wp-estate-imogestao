@@ -94,14 +94,16 @@ require_once plugin_dir_path(__DIR__) . 'includes/PostManager.php';
 
 class ApiHandler
 {
-    const API_URL = 'https://api.imocorretor.com.br/sites/v1/imoveis.json?api=tpgxphsBnmc1nG9l16409';
+    const API_URL = 'https://api.imocorretor.com.br/sites/v1/imoveis.json?api=';
     const MAX_LOOP_ITERATIONS = 100;
 
     private $postManager;
+    private $apiKey;
 
     public function __construct()
     {
         $this->postManager = new PostManager();
+        $this->apiKey = get_option('my_api_key'); // Retrieve the API key from the options
     }
 
     public function fetch_data()
@@ -119,7 +121,8 @@ class ApiHandler
                 wp_send_json_error('Error: Exceeded maximum loop iterations');
             }
 
-            $response = wp_remote_get(esc_url_raw(self::API_URL . ($page > 0 ? '&pagina=' . ($page * 24) : '')));
+            $apiUrl = self::API_URL . $this->apiKey . ($page > 0 ? '&pagina=' . ($page * 24) : ''); // Use the stored API key
+            $response = wp_remote_get(esc_url_raw($apiUrl));
 
             if (is_wp_error($response) || 200 !== wp_remote_retrieve_response_code($response)) {
                 wp_send_json_error('Error: ' . $response->get_error_message());
