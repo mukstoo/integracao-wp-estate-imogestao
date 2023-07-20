@@ -20,25 +20,6 @@ require_once plugin_dir_path(__FILE__) . 'includes/ApiHandler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/PostManager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/ImageManager.php';
 
-/* class MyPlugin
-{
-    private $admin;
-
-    public function __construct()
-    {
-        $this->admin = new AdminSettings();
-    }
-
-    public function run()
-    {
-        $this->admin->init();
-    }
-}
-
-$myPlugin = new MyPlugin();
-$myPlugin->run(); */
-
-
 class MyPlugin
 {
     private $admin;
