@@ -25,7 +25,7 @@ class AdminSettings
      */
     public function add_pages()
     {
-        add_options_page(__('Test Settings', 'myplugin'), __('Test Settings', 'myplugin'), 'manage_options', 'testsettings', array($this, 'settings_page'));
+        add_menu_page(__('Integracao Imogestao', 'myplugin'), __('Integracao Imogestao', 'myplugin'), 'manage_options', 'imogestao', array($this, 'settings_page'), '', 2);
     }
 
     /**
@@ -37,18 +37,20 @@ class AdminSettings
     }
 
     /**
-     * Enqueue scripts.
+     * Enqueue scripts and styles.
      */
     public function enqueue_scripts($hook)
     {
-        // Only enqueue the script on the settings page
-        if ($hook != 'settings_page_testsettings') {
+        // Only enqueue the script and style on the settings page
+        if ($hook != 'toplevel_page_imogestao') {
             return;
         }
 
         wp_enqueue_script('myplugin-script', plugins_url('admin/js/myplugin.js', __DIR__), array('jquery'), '1.0', true);
+        wp_enqueue_style('myplugin-style', plugins_url('admin/css/myplugin.css', __DIR__), array(), '1.0');
         wp_localize_script('myplugin-script', 'myplugin_ajax', array('ajax_url' => admin_url('admin-ajax.php')));
     }
+
 
     // Add this method
     public function set_api_key()
@@ -58,13 +60,3 @@ class AdminSettings
         wp_send_json_success(['message' => 'API key set successfully.']);
     }
 }
-
-/* add_action('admin_menu', 'my_admin_menu');
-
-function my_admin_menu() {
-    add_menu_page('My Plugin Page', 'My Plugin', 'manage_options', 'myplugin/myplugin-admin-page.php', 'myplugin_admin_page', 'dashicons-tickets', 6);
-}
-
-function myplugin_admin_page() {
-    // Your HTML code here
-} */

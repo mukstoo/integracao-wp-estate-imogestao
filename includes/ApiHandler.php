@@ -95,7 +95,8 @@ require_once plugin_dir_path(__DIR__) . 'includes/PostManager.php';
 class ApiHandler
 {
     const API_URL = 'https://api.imocorretor.com.br/sites/v1/imoveis.json?api=';
-    const MAX_LOOP_ITERATIONS = 100;
+    /* const API_URL = 'https://api.imocorretor.com.br/sites/v1/imoveis.json?api=tpgxphsBnmc1nG9l16409'; */
+    const MAX_LOOP_ITERATIONS = 400;
 
     private $postManager;
     private $apiKey;
@@ -103,11 +104,19 @@ class ApiHandler
     public function __construct()
     {
         $this->postManager = new PostManager();
-        $this->apiKey = get_option('my_api_key'); // Retrieve the API key from the options
     }
 
     public function fetch_data()
     {
+        $this->apiKey = get_option('my_api_key'); // Retrieve the API key from the options here
+        /* if (empty($this->apiKey)) {
+            error_log('Error: API key is not set');
+            return;
+        } elseif ($this->apiKey === 'tpgxphsBnmc1nG9l16409') {
+            error_log('Error: API correct');
+            return;
+        } */
+
         $numItemsFetched = 0;
         $page = isset($_GET['page']) ? absint($_GET['page']) : 0;
         $itemsProcessed = isset($_GET['items_processed']) ? absint($_GET['items_processed']) : 0;
@@ -164,10 +173,10 @@ class ApiHandler
             wp_send_json_error('Error: Invalid item data');
         }
 
-        $single_item_url = str_replace('imoveis.json', 'imovel.json', self::API_URL) . '&id=' . $item['id'];
+        $single_item_url = str_replace('imoveis.json', 'imovel.json', self::API_URL) . $this->apiKey . '&id=' . $item['id'];
         $response = wp_remote_get(esc_url_raw($single_item_url));
         if (is_wp_error($response) || 200 !== wp_remote_retrieve_response_code($response)) {
-            wp_send_json_error('Error: ' . $response->get_error_message());
+            /* wp_send_json_error('Error: ' . $response->get_error_message()); */
         }
 
         $detailed_item = json_decode(wp_remote_retrieve_body($response), true);
@@ -175,7 +184,7 @@ class ApiHandler
             return null;
         }
 
-        $this->postManager->process_item($detailed_item, $detailed_item['litoral']);
+        $this->postManager->process_item($detailed_item, $item['litoral']);
 
         return $detailed_item;
     }

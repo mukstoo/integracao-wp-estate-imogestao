@@ -20,7 +20,7 @@ require_once plugin_dir_path(__FILE__) . 'includes/ApiHandler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/PostManager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/ImageManager.php';
 
-class MyPlugin
+/* class MyPlugin
 {
     private $admin;
 
@@ -36,27 +36,37 @@ class MyPlugin
 }
 
 $myPlugin = new MyPlugin();
-$myPlugin->run();
+$myPlugin->run(); */
 
-function my_admin_notice()
+
+class MyPlugin
 {
-    global $pagenow;
-    if ($pagenow == 'myplugin/myplugin-admin-page.php') {
-        $message = apply_filters('my_plugin_message', '');
-        if (!empty($message)) {
-?>
-            <div class="notice notice-success is-dismissible">
-                <p><?php _e($message, 'my-text-domain'); ?></p>
-            </div>
-<?php
-        }
+    private $admin;
+
+    public function __construct()
+    {
+        $this->admin = new AdminSettings();
+    }
+
+    public function run()
+    {
+        $this->admin->init();
+        add_action('init', array($this, 'register_litoral_taxonomy'));
+    }
+
+    public function register_litoral_taxonomy()
+    {
+        register_taxonomy(
+            'litoral',
+            'estate_property',
+            array(
+                'label' => __('Litoral'),
+                'rewrite' => array('slug' => 'litoral'),
+                'hierarchical' => false,
+            )
+        );
     }
 }
-add_action('admin_notices', 'my_admin_notice');
 
-function set_my_plugin_message($message)
-{
-    add_filter('my_plugin_message', function () use ($message) {
-        return $message;
-    });
-}
+$myPlugin = new MyPlugin();
+$myPlugin->run();

@@ -80,31 +80,6 @@ class ImageManager
         }
         return $attachmentId;
     }
-    /* public function insertImage($photo, $postId)
-    {
-        $imageUrl = $photo['grande'];
-
-        $image = media_sideload_image($imageUrl, $postId, null, 'id');
-
-        if (is_wp_error($image)) {
-            // Display error message in the admin panel
-            my_admin_notice('Error uploading image: ' . $image->get_error_message());
-            return;
-        }
-
-        $attachmentId = $image;
-
-        $result = add_post_meta($attachmentId, 'codigo', $photo['codigo'], true);
-
-        if (is_wp_error($result)) {
-            // Display error message in the admin panel
-            my_admin_notice('Error adding post meta: ' . $result->get_error_message());
-            return;
-        }
-
-        return $attachmentId;
-    } */
-
 
     public function deleteImageAttachment($attachment)
     {

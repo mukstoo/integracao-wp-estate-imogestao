@@ -307,13 +307,15 @@ class PostManager
             throw new Exception('Invalid API ID');
         }
 
-        $existing_posts = get_posts(array(
-            'meta_key' => 'imovel_id',
-            'meta_value' => $api_id,
-            'post_type' => 'estate_property',
-            'post_status' => 'any',
-            'numberposts' => 1
-        ));
+        $existing_posts = get_posts(
+            array(
+                'meta_key' => 'imovel_id',
+                'meta_value' => $api_id,
+                'post_type' => 'estate_property',
+                'post_status' => 'any',
+                'numberposts' => 1
+            )
+        );
 
         if (is_wp_error($existing_posts)) {
             throw new Exception('Error: ' . $existing_posts->get_error_message());
@@ -324,23 +326,25 @@ class PostManager
 
     private function create_new_post($detailed_item, $litoral)
     {
-        $post_id = wp_insert_post(array(
-            'post_title'   => $detailed_item['tipo'] . ' - ' . $detailed_item['referencia'],
-            'post_content' => isset($detailed_item['texto_longo']) ? $detailed_item['texto_longo'] : 'Descrição indisponível',
-            'post_status'  => 'publish',
-            'post_type'    => 'estate_property',
-            'meta_input' => array(
-                'imovel_id' => $detailed_item['id'],
-                'litoral' => $litoral
+        $post_id = wp_insert_post(
+            array(
+                'post_title' => $detailed_item['tipo'] . ' - ' . $detailed_item['referencia'],
+                'post_content' => isset($detailed_item['texto_longo']) ? $detailed_item['texto_longo'] : 'Descrição indisponível',
+                'post_status' => 'publish',
+                'post_type' => 'estate_property',
+                'meta_input' => array(
+                    'imovel_id' => $detailed_item['id'],
+                    /* 'litoral' => $litoral */
+                )
             )
-        ));
+        );
 
         if (is_wp_error($post_id)) {
             throw new Exception('Error: ' . $post_id->get_error_message());
         }
 
         $this->update_post_meta_data($post_id, $detailed_item);
-        $this->assign_terms_to_post($post_id, $detailed_item);
+        $this->assign_terms_to_post($post_id, $detailed_item, $litoral);
         $this->imageManager->uploadImages($post_id, $detailed_item['fotos']);
         $this->imageManager->setPostThumbnail($post_id, $detailed_item['fotos'][0]['codigo']);
 
@@ -359,8 +363,8 @@ class PostManager
         }
 
         $post_data = array(
-            'ID'           => $post_id,
-            'post_title'   => $detailed_item['tipo'] . ' - ' . $detailed_item['referencia'],
+            'ID' => $post_id,
+            'post_title' => $detailed_item['tipo'] . ' - ' . $detailed_item['referencia'],
             'post_content' => isset($detailed_item['texto_longo']) ? $detailed_item['texto_longo'] : 'Descrição indisponível',
         );
 
@@ -370,9 +374,9 @@ class PostManager
         }
 
         $this->update_post_meta_data($post_id, $detailed_item);
-        $this->assign_terms_to_post($post_id, $detailed_item);
-        $this->imageManager->updateImages($post_id, $detailed_item['fotos']);
-        $this->imageManager->setPostThumbnail($post_id, $detailed_item['fotos'][0]['codigo']);
+        $this->assign_terms_to_post($post_id, $detailed_item, $litoral);
+        /* $this->imageManager->updateImages($post_id, $detailed_item['fotos']);
+        $this->imageManager->setPostThumbnail($post_id, $detailed_item['fotos'][0]['codigo']); */
     }
 
     private function update_post_meta_data($post_id, $detailed_item)
@@ -403,7 +407,7 @@ class PostManager
             'hidden_address' => $imovel_data['localizacao']['endereco'] . ' ' . $imovel_data['localizacao']['endereco_complemento'] . ' ' . $imovel_data['localizacao']['endereco_numero'],
             'property_year_tax' => 0,
             'property_hoa' => 0,
-            'property_size' => 0,
+            /* 'property_size' => 0, */
             'prop_featured' => 0,
             'property_theme_slider' => 0,
             'embed_video_type' => 'youtube',
@@ -430,7 +434,7 @@ class PostManager
         return $meta_data;
     }
 
-    public function assign_terms_to_post($post_id, $imovel_data)
+    public function assign_terms_to_post($post_id, $imovel_data, $litoral)
     {
         $errors = [];
 
@@ -478,6 +482,12 @@ class PostManager
         $result = wp_set_object_terms($post_id, "À Venda", 'property_status', false);
         if (is_wp_error($result)) {
             $errors[] = "Failed to assign terms for post {$post_id} in taxonomy property_status: " . $result->get_error_message();
+        }
+
+        // Set litoral
+        $result = wp_set_object_terms($post_id, $litoral ? '1' : '0', 'litoral', false);
+        if (is_wp_error($result)) {
+            $errors[] = "Failed to assign terms for post {$post_id} in taxonomy litoral: " . $result->get_error_message();
         }
 
         // Set property_features based on individual keys in imovel_data
