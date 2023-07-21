@@ -181,7 +181,7 @@ class PostManager
         return $meta_data;
     }
 
-    public function assign_terms_to_post($post_id, $imovel_data, $litoral)
+    /* public function assign_terms_to_post($post_id, $imovel_data, $litoral)
     {
         $errors = [];
 
@@ -252,5 +252,113 @@ class PostManager
             $errors[] = "Failed to assign terms for post {$post_id} in taxonomy property_features: " . $result->get_error_message();
         }
         return $errors;
+    } */
+
+    public function assign_terms_to_post($post_id, $imovel_data, $litoral)
+    {
+        $errors = [];
+        $city = ''; // Variable to store the city
+
+        foreach (self::ASSOCIATIONS as $taxonomy => $data) {
+            $keys = $data[0];
+            $is_multiple = $data[1];
+
+            $values = $imovel_data;
+            foreach ($keys as $key) {
+                if (!isset($values[$key])) {
+                    continue 2;
+                }
+                $values = $values[$key];
+            }
+
+            // If the taxonomy is 'property_city', store the city
+            if ($taxonomy == 'property_city') {
+                $city = $values;
+            }
+
+            if ($is_multiple) {
+                $terms_to_set = [];
+                foreach ($values as $term => $value) {
+                    if ($value == 1) {
+                        if (isset(self::TERM_MAPPING[$term])) {
+                            $term = self::TERM_MAPPING[$term];
+                        }
+                        if (!term_exists($term, $taxonomy)) {
+                            wp_insert_term($term, $taxonomy);
+                        }
+                        $terms_to_set[] = $term;
+                    }
+                }
+                $values = $terms_to_set;
+            } else {
+                // For 'property_area', create a slug that includes the city
+                if ($taxonomy == 'property_area') {
+                    $slug = sanitize_title($values . '-' . $city);
+                    $existing_term = get_term_by('slug', $slug, $taxonomy);
+
+                    // If the term doesn't exist, create a new one
+                    if (!$existing_term) {
+                        $term_info = wp_insert_term($values, $taxonomy, ['slug' => $slug]);
+                        error_log("Created new term: " . $values . "-" . $slug);
+
+                        // If the taxonomy is 'property_area', add the term meta
+                        if (!is_wp_error($term_info)) {
+                            update_option("taxonomy_" . $term_info['term_id'], ['cityparent' => $city]);
+                            error_log("Created new term: " . $term_info['term_id'] . "-" . $city);
+                        }
+                        // Update $values with the new slug
+                        $values = [$slug];
+                    } else {
+                        // If the term does exist, also update $values with the existing slug
+                        $values = [$existing_term->slug];
+                    }
+                } else {
+                    // For other taxonomies, check existence by name and create if not exist
+                    if (!term_exists($values, $taxonomy)) {
+                        wp_insert_term($values, $taxonomy);
+                    }
+                    $values = [$values];
+                }
+            }
+
+            // Assign terms to post
+            $result = wp_set_object_terms($post_id, $values, $taxonomy, false);
+            if (is_wp_error($result)) {
+                $errors[] = "Failed to assign terms for post {$post_id} in taxonomy {$taxonomy}: " . $result->get_error_message();
+            }
+        }
+
+        // Set property_status to "À Venda"
+        $result = wp_set_object_terms($post_id, "À Venda", 'property_status', false);
+        if (is_wp_error($result)) {
+            $errors[] = "Failed to assign terms for post {$post_id} in taxonomy property_status: " . $result->get_error_message();
+        }
+
+        // Set litoral
+        $result = wp_set_object_terms($post_id, $litoral ? '1' : '0', 'litoral', false);
+        if (is_wp_error($result)) {
+            $errors[] = "Failed to assign terms for post {$post_id} in taxonomy litoral: " . $result->get_error_message();
+        }
+
+        // Set property_features based on individual keys in imovel_data
+        $features_to_set = [];
+        foreach (self::TERM_MAPPING as $key => $term) {
+            if (isset($imovel_data[$key]) && $imovel_data[$key] == 1) {
+                if (!term_exists($term, 'property_features')) {
+                    wp_insert_term($term, 'property_features');
+                }
+                $features_to_set[] = $term;
+            }
+        }
+        $result = wp_set_object_terms($post_id, $features_to_set, 'property_features', false);
+        if (is_wp_error($result)) {
+            $errors[] = "Failed to assign terms for post {$post_id} in taxonomy property_features: " . $result->get_error_message();
+        }
+
+        return $errors;
     }
+
+
+
+
 }
