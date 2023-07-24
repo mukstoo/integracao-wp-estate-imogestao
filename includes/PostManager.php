@@ -357,8 +357,36 @@ class PostManager
 
         return $errors;
     }
+    public function sync_posts_with_api($api_posts)
+    {
+        // Get all posts from the WordPress site
+        $wp_posts = get_posts([
+            'post_type' => 'estate_property',
+            'post_status' => 'any',
+            'numberposts' => -1,
+            'fields' => 'ids',
+            'orderby' => 'date',
+            'order' => 'DESC', // This will ensure that newer posts come first
+        ]);
 
+        $seen_ids = [];
 
+        // Loop through the WordPress posts
+        foreach ($wp_posts as $post_id) {
+            // Get the 'imovel_id' post meta
+            $imovel_id = get_post_meta($post_id, 'imovel_id', true);
 
+            // If the 'imovel_id' is not in the API posts, delete the post
+            if (!in_array($imovel_id, $api_posts)) {
+                wp_delete_post($post_id, true);
+            } else if (in_array($imovel_id, $seen_ids)) {
+                // If we've seen this 'imovel_id' before, delete the post
+                wp_delete_post($post_id, true);
+            } else {
+                // If we haven't seen this 'imovel_id' before, add it to the seen IDs
+                $seen_ids[] = $imovel_id;
+            }
+        }
+    }
 
 }

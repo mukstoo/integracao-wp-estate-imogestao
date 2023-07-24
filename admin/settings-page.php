@@ -16,6 +16,9 @@
         <button id="setStoredItems">Set Stored Items</button>
         <button id="clearData">Clear Data</button>
     </div>
+    <div class="input-group">
+        <button id="syncData">Sync Data</button>
+    </div>
 
     <div id="results"></div>
 </div>
