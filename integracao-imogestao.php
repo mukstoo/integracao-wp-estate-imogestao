@@ -19,14 +19,17 @@ require_once plugin_dir_path(__FILE__) . 'admin/AdminSettings.php';
 require_once plugin_dir_path(__FILE__) . 'includes/ApiHandler.php';
 require_once plugin_dir_path(__FILE__) . 'includes/PostManager.php';
 require_once plugin_dir_path(__FILE__) . 'includes/ImageManager.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Scheduler.php'; //added this
 
 class MyPlugin
 {
     private $admin;
+    private $scheduler;
 
     public function __construct()
     {
         $this->admin = new AdminSettings();
+        $this->scheduler = new Scheduler(); // Instantiate the Scheduler class here
     }
 
     public function run()
