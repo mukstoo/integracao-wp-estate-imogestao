@@ -1,0 +1,58 @@
+/* .wrap {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.wrap label {
+    display: block;
+    margin-top: 20px;
+}
+
+.wrap input[type="text"],
+.wrap input[type="number"],
+.wrap button {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.wrap #results {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+}
+ */
+.wrap {
+  max-width: 800px;
+  margin: 0 auto;
+  padding-left: 20px; /* To ensure content doesn't go behind the admin sidebar */
+}
+
+.wrap label {
+  display: block;
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+.wrap .input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.wrap .input-group input[type="text"],
+.wrap .input-group input[type="number"] {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.wrap .input-group button {
+  width: auto;
+}
+
+.wrap #results {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
